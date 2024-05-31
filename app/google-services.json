@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "240641447088",
+    "project_id": "journal-ca896",
+    "storage_bucket": "journal-ca896.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:240641447088:android:c64e5ef4127c2a16c75775",
+        "android_client_info": {
+          "package_name": "com.example.jounrnal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCcq_p83th0QpGrw1nBVbshzEDzdDvFw0s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

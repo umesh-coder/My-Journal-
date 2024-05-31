@@ -1,0 +1,6 @@
+
+Wkotlin:S6619Ά"7Remove this useless non-null check, it always succeeds.(©Θ»8‹θ“τό1
+[kotlin:S6619\"7Remove this useless non-null check, it always succeeds.(ξΠ›μϊÿÿÿÿ8θ“τό1
+Hkotlin:S108Ά")Either remove or fill this block of code.(©Θ»8’θ“τό1
+Bkotlin:S1874F"#Deprecated code should not be used.(πΖΚ8θ“τό1
+Skotlin:S1066".Merge this "if" statement with the nested one.(™·ώωÿÿÿÿ8θ“τό1
