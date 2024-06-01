@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.example.jounrnal.databinding.ActivityAddJournalBinding
@@ -17,7 +18,9 @@ import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 class AddJournalActivity : AppCompatActivity() {
 
@@ -36,7 +39,7 @@ class AddJournalActivity : AppCompatActivity() {
     lateinit var storageReference: StorageReference
 
     var collectionReference = db.collection("Journal")
-    lateinit var imageUri: Uri
+    private var imageUri: Uri?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,7 +60,7 @@ class AddJournalActivity : AppCompatActivity() {
 //                currentUserName = JournalUser.instance!!.username.toString()
 
                 currentUserId = auth.currentUser?.uid.toString()
-                currentUserName = auth.currentUser?.displayName.toString()
+//                currentUserName = auth.currentUser?.displayName.toString()
 
                 postUsernameTextview.text = currentUserName
             }
@@ -76,8 +79,6 @@ class AddJournalActivity : AppCompatActivity() {
 
             }
 
-
-
         }
 
 
@@ -89,49 +90,67 @@ class AddJournalActivity : AppCompatActivity() {
 
         binding.postProgressBar.visibility = View.VISIBLE
 
-        if (!TextUtils.isEmpty(title) && !TextUtils.isEmpty(thoughts) && imageUri != null){
+        if (validateInput(title, thoughts, imageUri)) {
+            // Saving path of the image
+            val filepath: StorageReference = storageReference.child("journal_images").child("my_image_" + Timestamp.now().seconds)
 
-        //saving path of image
+            // Uploading image to Firebase storage
+            filepath.putFile(imageUri!!).addOnSuccessListener {
+                filepath.downloadUrl.addOnSuccessListener { uri ->
+                    val imageUri: String = uri.toString()
+                    val timeAdded: Timestamp = Timestamp(Date())
+                    val readableTimeAdded = formatTimestampToReadableString(timeAdded)
 
-            val filepath :StorageReference = storageReference.child("journal_images").child("my_image_"+Timestamp.now().seconds)
-
-
-                //uploading image to firebase storage
-            filepath.putFile(imageUri).addOnSuccessListener {
-                filepath.getDownloadUrl().addOnSuccessListener {
-                    var imageUri : String = it.toString()
-                    var timeAdded : Timestamp = Timestamp(Date())
-
-                    //creating object of journal
-                    var journal :JournalModel = JournalModel(title,thoughts,imageUri, currentUserId ,currentUserName, timeAdded )
+                    // Creating object of Journal
+                    val journal = JournalModel(title, thoughts, imageUri, currentUserId, currentUserName, readableTimeAdded)
                     Log.d("Data", "saveJournal: $journal")
 
-                    //adding to firestore
-                        collectionReference
-                        .add(journal)
+                    // Adding to Firestore
+                    collectionReference.add(journal)
                         .addOnSuccessListener {
-                        binding.postProgressBar.visibility = View.INVISIBLE
-                        startActivity(Intent(this, JournalList::class.java))
-                        finish()
-                    }.addOnFailureListener {
-                        binding.postProgressBar.visibility = View.INVISIBLE
-                                Log.w("not added"+it, "Error adding document" )
-                    }
+                            binding.postProgressBar.visibility = View.INVISIBLE
+                            Toast.makeText(this,"Journal Posted Successfully", Toast.LENGTH_SHORT).show()
+                            startActivity(Intent(this, JournalList::class.java))
+                            finish()
+                        }.addOnFailureListener { e ->
+                            binding.postProgressBar.visibility = View.INVISIBLE
+                            Log.w("Firestore", "Error adding document", e)
+                        }
                 }
-            }.addOnFailureListener {
-
+            }.addOnFailureListener { e ->
                 binding.postProgressBar.visibility = View.INVISIBLE
-
+                Log.e("Storage", "Error uploading image", e)
             }
-
-         }else
-        {
-
+        } else {
             binding.postProgressBar.visibility = View.INVISIBLE
-
         }
 
 
+    }
+
+    private fun validateInput(title: String, thoughts: String, imageUri: Uri?): Boolean {
+        var isValid = true
+
+        if (title.isEmpty()) {
+            binding.postTitleEt.error = "Title cannot be empty"
+            isValid = false
+        } else {
+            binding.postTitleEt.error = null
+        }
+
+        if (thoughts.isEmpty()) {
+            binding.postDescriptionEt.error = "Thoughts cannot be empty"
+            isValid = false
+        } else {
+            binding.postDescriptionEt.error = null
+        }
+
+        if (imageUri == null) {
+            Toast.makeText(this, "Image cannot be empty", Toast.LENGTH_SHORT).show()
+            isValid = false
+        }
+
+        return isValid
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -146,6 +165,12 @@ class AddJournalActivity : AppCompatActivity() {
 
         }
 
+    }
+
+    private fun formatTimestampToReadableString(timestamp: Timestamp): String {
+        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        val date = timestamp.toDate()
+        return sdf.format(date)
     }
 
     override fun onStart() {

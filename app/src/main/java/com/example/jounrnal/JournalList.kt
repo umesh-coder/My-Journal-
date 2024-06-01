@@ -20,9 +20,12 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.StorageReference
+import java.io.InputStream
+import java.net.URL
 
 
 class JournalList : AppCompatActivity() {
+
     lateinit var binding: ActivityJournalListBinding
     lateinit var firebaseAuth: FirebaseAuth
     lateinit var firebaseUser: FirebaseUser
@@ -54,6 +57,8 @@ class JournalList : AppCompatActivity() {
         journalList = arrayListOf<JournalModel>()
 
 
+
+
     }
 
 
@@ -73,7 +78,7 @@ class JournalList : AppCompatActivity() {
                if(firebaseUser != null && firebaseAuth!=null){
 
                    firebaseAuth.signOut()
-                   startActivity(Intent(this, JournalList::class.java))
+                   startActivity(Intent(this, MainActivity::class.java))
                }
             }
 
@@ -90,21 +95,15 @@ class JournalList : AppCompatActivity() {
 
                 if (!it.isEmpty) {
 
-//                    it.forEach{
-//                    //convert snapshots to journal
-//                        var journal = it.toObject(JournalModel::class.java)
-//                        journalList.add(journal)
-//
-//                    }
-
                     for(document in it){
+
                         var journal =JournalModel(
                             document.data.get("title").toString(),
                             document.data.get("thoughts").toString(),
                             document.data.get("imageUrl").toString(),
                             document.data.get("userId").toString(),
                             document.data.get("username").toString(),
-                            document.data.get("timeAdded") as Timestamp,
+                            document.data.get("timeAdded").toString(),
                         )
 
                         journalList.add(journal)
@@ -126,5 +125,9 @@ class JournalList : AppCompatActivity() {
             }
 
     }
+
+
+
+
 
 }

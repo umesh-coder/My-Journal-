@@ -9,5 +9,5 @@ data class JournalModel (
     val imageUrl : String ,
     val userId :String ,
     val username : String ,
-    val timeAdded: Timestamp
+    val timeAdded: String
 )
